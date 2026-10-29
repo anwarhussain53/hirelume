@@ -47,7 +47,10 @@ async function createOrg(label: string): Promise<string> {
 async function createRecruiter(organizationId: string, role: "admin" | "recruiter") {
   const email = `rls-${run}-${randomUUID().slice(0, 8)}@example.com`;
   const password = randomUUID();
-  await must(admin.from("invitations").insert({ organization_id: organizationId, email, role }));
+  const { error: inviteError } = await admin
+    .from("invitations")
+    .insert({ organization_id: organizationId, email, role });
+  if (inviteError) throw inviteError;
   const { data, error } = await admin.auth.admin.createUser({ email, password, email_confirm: true });
   if (error) throw error;
   userIds.push(data.user.id);
