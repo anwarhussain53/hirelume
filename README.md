@@ -62,6 +62,18 @@ invited their email, and rejects anyone without a valid invitation.
 
 CI starts a local Supabase stack, applies all migrations and runs the RLS test suite on every PR.
 
+## Authentication
+
+- `src/proxy.ts` refreshes the Supabase session on every request and redirects signed-out users to
+  `/sign-in?next=…`. It is a UX gate only.
+- The real check is the data access layer, `getCurrentRecruiter()`, which verifies the JWT with
+  `getClaims()` and loads the recruiter and organization through RLS on every request.
+- `next` redirect targets are validated as same-origin paths to prevent open redirects.
+- Sign-up answers identically for invited and uninvited emails, so it can't be used to discover who
+  has an invitation.
+- `src/architecture.test.ts` enforces the security rules in `AGENTS.md` (no Supabase inside
+  `"use cache"`, no `getSession()`, secret key only in server-only modules).
+
 ## Evaluation results
 
 _Coming in Milestone 10._
