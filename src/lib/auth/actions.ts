@@ -4,7 +4,8 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { SAFE_SIGN_UP_ERRORS, authErrorMessage } from "@/lib/auth/errors";
 import { SIGN_IN_PATH, safeRedirectPath } from "@/lib/auth/paths";
-import { type FieldErrors, firstFieldErrors, signInSchema, signUpSchema } from "@/lib/auth/schemas";
+import { signInSchema, signUpSchema } from "@/lib/auth/schemas";
+import { type FieldErrors, firstFieldErrors } from "@/lib/forms";
 import { createClient } from "@/lib/supabase/server";
 
 export type AuthFormState = {

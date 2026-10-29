@@ -144,6 +144,38 @@ describe("tenant isolation", () => {
     expect(error?.code).toBe("23503");
   });
 
+  it("cannot credit its own job to a recruiter in another organization", async () => {
+    const { error } = await recruiterA.client.from("jobs").insert({
+      organization_id: orgA,
+      created_by: adminB.userId,
+      title: "x",
+      description: "x",
+      must_have_skills: ["x"],
+    });
+    expect(error?.code).toBe("23503");
+  });
+
+  it("rejects a job without must-have skills even if the app is bypassed", async () => {
+    const { error } = await recruiterA.client
+      .from("jobs")
+      .insert({ organization_id: orgA, title: "x", description: "x", must_have_skills: [] });
+    expect(error?.code).toBe("23514");
+  });
+
+  it("lets a recruiter create, read and update jobs in their own organization", async () => {
+    const created = await must(
+      recruiterA.client
+        .from("jobs")
+        .insert({ organization_id: orgA, created_by: recruiterA.userId, title: "A job", description: "d", must_have_skills: ["ts"] })
+        .select("id")
+        .single(),
+    );
+    const updated = await must(
+      recruiterA.client.from("jobs").update({ status: "closed" }).eq("id", created.id).select("status").single(),
+    );
+    expect(updated.status).toBe("closed");
+  });
+
   it("gives signed-out visitors no table access", async () => {
     const anon = createClient(url, publishableKey, clientOptions);
     const { error } = await anon.from("jobs").select("id");

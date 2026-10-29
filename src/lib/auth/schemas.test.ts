@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { firstFieldErrors, signInSchema, signUpSchema } from "./schemas";
+import { firstFieldErrors } from "@/lib/forms";
+import { signInSchema, signUpSchema } from "./schemas";
 
 describe("signInSchema", () => {
   it("normalizes the email", () => {
