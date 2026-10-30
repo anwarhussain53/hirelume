@@ -74,6 +74,17 @@ CI starts a local Supabase stack, applies all migrations and runs the RLS test s
 - `src/architecture.test.ts` enforces the security rules in `AGENTS.md` (no Supabase inside
   `"use cache"`, no `getSession()`, secret key only in server-only modules).
 
+## Resume upload
+
+1. The server issues one signed upload URL per file and chooses every storage path
+   (`{org}/{candidate}/{resume}.pdf`), so browsers upload straight to the private bucket without
+   picking where files go, and large batches never pass through a serverless function.
+2. After each upload the server re-downloads the file, checks the `%PDF-` signature (not the name
+   or MIME type), hashes it with SHA-256 so a resume already in the org is linked rather than
+   re-processed, and extracts text with [unpdf](https://github.com/unjs/unpdf).
+3. PDFs open through signed URLs that expire after 60 seconds. Deleting a candidate removes their
+   PDFs from Storage first, then the database cascades to resumes, chunks, matches and emails.
+
 ## Evaluation results
 
 _Coming in Milestone 10._

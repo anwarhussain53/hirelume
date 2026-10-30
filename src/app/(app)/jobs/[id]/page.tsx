@@ -4,6 +4,8 @@ import { Suspense } from "react";
 import { SkillChips, StatusBadge } from "@/components/badges";
 import { WORK_MODE_LABELS, formatDate, formatMinYears } from "@/lib/jobs/format";
 import { getJob } from "@/lib/jobs/data";
+import { CandidateList } from "./candidate-list";
+import { ResumeUploader } from "./resume-uploader";
 
 export const metadata: Metadata = { title: "Job · Hirelume" };
 
@@ -68,9 +70,14 @@ async function JobDetail({ id }: { id: string }) {
         </aside>
       </div>
 
-      <section className="mt-10 rounded-2xl border border-dashed border-zinc-300 px-6 py-12 text-center dark:border-zinc-700">
-        <p className="font-medium">Candidates</p>
-        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">Resume upload and ranking arrive in the next milestones.</p>
+      <section className="mt-10 flex flex-col gap-4" aria-labelledby="candidates-heading">
+        <h2 id="candidates-heading" className="text-lg font-semibold">
+          Candidates
+        </h2>
+        <ResumeUploader jobId={job.id} />
+        <Suspense fallback={<div className="h-24 animate-pulse rounded-2xl bg-zinc-100 dark:bg-zinc-800" />}>
+          <CandidateList jobId={job.id} />
+        </Suspense>
       </section>
     </article>
   );

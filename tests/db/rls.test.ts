@@ -176,6 +176,24 @@ describe("tenant isolation", () => {
     expect(updated.status).toBe("closed");
   });
 
+  it("stores each resume file once per organization", async () => {
+    const candidate = await must(
+      recruiterA.client.from("candidates").insert({ organization_id: orgA }).select("id").single(),
+    );
+    const resume = (sha: string) => ({
+      organization_id: orgA,
+      candidate_id: candidate.id,
+      storage_path: `${orgA}/${candidate.id}/${randomUUID()}.pdf`,
+      file_name: "r.pdf",
+      file_sha256: sha,
+      file_size_bytes: 100,
+    });
+    const first = await recruiterA.client.from("resumes").insert(resume("d".repeat(64)));
+    expect(first.error).toBeNull();
+    const duplicate = await recruiterA.client.from("resumes").insert(resume("d".repeat(64)));
+    expect(duplicate.error?.code).toBe("23505");
+  });
+
   it("gives signed-out visitors no table access", async () => {
     const anon = createClient(url, publishableKey, clientOptions);
     const { error } = await anon.from("jobs").select("id");
